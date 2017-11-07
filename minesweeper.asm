@@ -1,8 +1,6 @@
 %include "gtkenums.inc"
 %include "equates.inc"
 
-global  main
-
 ;GTK
 extern  gtk_init, gtk_window_new, gtk_button_new_with_label
 extern  gtk_container_add, gtk_widget_show, gtk_main, gtk_main_quit
@@ -15,21 +13,40 @@ extern  gtk_dialog_run, gtk_widget_destroy
 ;GLib
 extern  g_signal_connect_data, g_print
 
-SECTION .data
-szPushMe            db  "2splode||!2splode", 0
+
+SECTION .data ;###########################################################.data
+
+szPushMe            db  "?", 0
 szItWorks           db  "SPLODE!!!", 10 ,0
 szTitle             db  "Minesweeper", 0
+
+winWidth            equ 800
+winHeight           equ 600
+buttonSize          equ 50
+mineRatio           dq  0.15
+gridX               dq  winWidth/buttonSize
+gridY               dq  winHeight/buttonSize
+;gridTotal           dq  gridX*gridY
+;mineCount           dq  gridTotal*mineRatio
+;error: unable to multiply two non-scalar objects
+
 ;event names: event_*
 szevent_destroy     db  "destroy", 0
 szevent_clicked     db  "clicked", 0
 
-SECTION .bss
+
+SECTION .bss ;#############################################################.bss
+
 lpBuffer    resb    12
 hMain       resd    1
 hButton     resd    1
 hFrame      resd    1
 
-SECTION .text
+
+SECTION .text ;###########################################################.text
+
+global  main
+
 ;~ int main( int   argc,
           ;~ char *argv[] )
 main:
@@ -48,8 +65,8 @@ main:
     add     esp, 4 * 1
     mov     [hMain], eax
 
-    push    600
-    push    800
+    push    winHeight
+    push    winWidth
     push    eax
     call    gtk_window_set_default_size
     add     esp, 4 * 3
@@ -78,14 +95,14 @@ main:
     add     esp, 4 * 1
     mov     [hButton], eax
 
-    push    35
-    push    80
+    push    buttonSize
+    push    buttonSize
     push    eax
     call    gtk_widget_set_size_request
     add     esp, 4 * 3
-
-    push    20
-    push    100
+    ; button pos
+    push    0
+    push    0
     push    dword [hButton]
     push    dword [hFrame]
     call    gtk_fixed_put
