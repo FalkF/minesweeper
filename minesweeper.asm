@@ -16,15 +16,10 @@ extern  gtk_dialog_run, gtk_widget_destroy
 extern  g_signal_connect_data, g_print
 
 SECTION .data
-szPushMe            db  "Push Me!", 0
-szItWorks           db  "Your first GTK window, it works!!!!!", 10 ,0
-szReally            db  "Why do you want to leave me?", 0
-szSad               db  "Are you sure you want to leave me?", 10
-                    db  "Really?  I am sad that you are leaving me!", 10, 0
-szPoof              db  "Go POOF!", 0
-szTitle             db  "GTK using NASM!", 0
-
-szevent_delete      db  "delete-event", 0
+szPushMe            db  "2splode||!2splode", 0
+szItWorks           db  "SPLODE!!!", 10 ,0
+szTitle             db  "Minesweeper", 0
+;event names: event_*
 szevent_destroy     db  "destroy", 0
 szevent_clicked     db  "clicked", 0
 
@@ -32,7 +27,6 @@ SECTION .bss
 lpBuffer    resb    12
 hMain       resd    1
 hButton     resd    1
-hExit       resd    1
 hFrame      resd    1
 
 SECTION .text
@@ -54,8 +48,8 @@ main:
     add     esp, 4 * 1
     mov     [hMain], eax
 
-    push    150
-    push    300
+    push    600
+    push    800
     push    eax
     call    gtk_window_set_default_size
     add     esp, 4 * 3
@@ -97,35 +91,7 @@ main:
     call    gtk_fixed_put
     add     esp, 4 * 4
 
-    ; Exit button
-    push    szPoof
-    call    gtk_button_new_with_label
-    add     esp, 4 * 1
-    mov     [hExit], eax
-
-    push    35
-    push    80
-    push    eax
-    call    gtk_widget_set_size_request
-    add     esp, 4 * 3
-
-    push    90
-    push    100
-    push    dword [hExit]
-    push    dword [hFrame]
-    call    gtk_fixed_put
-    add     esp, 4 * 4
-
     ; Signals
-    ; on szevent_delete exec event_delete
-    push    NULL
-    push    NULL
-    push    NULL
-    push    event_delete
-    push    szevent_delete
-    push    dword [hMain]
-    call    g_signal_connect_data
-    add     esp, 4 * 6
     ; on szevent_destroy exec event_destroy
     push    NULL
     push    NULL
@@ -144,15 +110,6 @@ main:
     push    dword [hButton]
     call    g_signal_connect_data
     add     esp, 4 * 6
-    ; poof button on szevent_clicked exec click event_delete
-    push    NULL
-    push    NULL
-    push    NULL
-    push    event_delete
-    push    szevent_clicked
-    push    dword [hExit]
-    call    g_signal_connect_data
-    add     esp, 4 * 6
     ; show window?
     push    dword [hMain]
     call    gtk_widget_show_all
@@ -162,22 +119,6 @@ main:
 
     mov     esp, ebp
     pop     ebp
-    ret
-
-;~ gboolean event_delete( GtkWidget *widget,
-                        ;~ GdkEvent  *event,
-                        ;~ gpointer   data )
-event_delete:
-    push    dword [hMain]
-    call    show_dialog
-    cmp     eax, GTK_RESPONSE_NO
-    jne      .bye
-    mov     eax, TRUE
-    ret
-
-.bye:
-    call    gtk_main_quit
-    mov     eax, FALSE
     ret
 
 ;~ void event_destroy( GtkWidget *widget,
@@ -193,40 +134,3 @@ event_clicked:
     call    g_print
     add     esp, 4 * 1
     ret
-
-;~ void show_dialog(gpointer window)
-show_dialog:
-    push    ebp
-    mov     ebp, esp
-    push    esi
-
-    push    szSad
-    push    GTK_BUTTONS_YES_NO
-    push    GTK_MESSAGE_QUESTION
-    push    GTK_DIALOG_DESTROY_WITH_PARENT
-    push    dword [ebp + 8]
-    call    gtk_message_dialog_new
-    add     esp, 4 * 5
-    xchg    eax, esi
-
-    push    szReally
-    push    esi
-    call    gtk_window_set_title
-    add     esp, 4 * 2
-
-    push    esi
-    call    gtk_dialog_run
-    add     esp, 4 * 1
-
-    push    eax
-
-    push    esi
-    call    gtk_widget_destroy
-    add     esp, 4 * 1
-
-    pop     eax
-    pop     esi
-    mov     esp, ebp
-    pop     ebp
-
-    ret     4 * 1
